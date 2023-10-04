@@ -1,53 +1,60 @@
 .html:
 <template>
-    <lightning-card title=" Creted Accounts">
-        <div class="slds-m-around_medium">
-            <template if:true={accounts}>
-                <ul class="slds-list_dotted">
-                    <template for:each={accounts} for:item="account">
-                        <li key={account.Id}>{account.Name}</li>
-                    </template>
-                </ul>
+    <lightning-card title=" Creted accounts">
+        <template if:true={accountrecords}>
+             <template for:each={accountrecords} for:item="acc">
+                <p key={acc.id}>{acc.Name}
+                </p>    
             </template>
-            <template if:false={accounts}>
-                No accounts found.
-            </template>
-        </div>
+        </template>
     </lightning-card>
 </template>
 
+
+
 js:
-import { LightningElement, wire } from 'lwc';
-import getRecentlyCreatedAccounts from '@salesforce/apex/AccountController.getRecentlyCreatedAccounts';
 
-export default class RecentlyCreatedAccounts extends LightningElement {
-    accounts;
+ import { LightningElement,wire} from 'lwc';
+import getRecently from '@salesforce/apex/CretedController.getRecently';
 
-    @wire(getRecentlyCreatedAccounts)
-    wiredAccounts({ error, data }) {
+//import  getRecently from '@salesforce/apex/CretedController.getRecently';
+export default class CretedAccount extends LightningElement {
+    accountrecords;
+   @wire(getRecently)
+     wiredAccounts({ error, data }) {
         if (data) {
-            this.accounts = data;
+     //       this.accounts = data;
+     console.log('Records',JSON.stringify(data));
+     this.accountrecords=data;
         } else if (error) {
-            console.error(error);
-        }
-    }
+          //  console.error('Error loading recently created accounts:', error);
+
+        }
+    }
 }
 
 
-.js-meta.xml
+xml:
+
+<?xml version="1.0" encoding="UTF-8"?>
 <LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
-    <apiVersion>53.0</apiVersion>
-    <isExposed>true</isExposed>
+    <apiVersion>58.0</apiVersion>
+        <isExposed>true</isExposed>
+    <targets>
+   <target>lightning__AppPage</target>
+    <target>lightning__HomePage</target>
+  </targets>
 </LightningComponentBundle>
+
+ 
 
 
 
 Apex code --
-
-public with sharing class AccountController {
-    @AuraEnabled(cacheable=true)
-    public static List<Account> getRecentlyCreatedAccounts() {
-        return [SELECT Id, Name FROM Account ORDER BY CreatedDate DESC LIMIT 10];
+public class CretedController {
+  @AuraEnabled(cacheable=true)
+    public static List<Account>getRecently() {
+        return [SELECT Id, Name, CreatedDate FROM Account ORDER BY CreatedDate DESC LIMIT 10];
     }
 }
 
